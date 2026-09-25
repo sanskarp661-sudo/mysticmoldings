@@ -21,6 +21,3 @@ The owner-provided profile https://www.instagram.com/mystic_moldings/ is linked 
 
 ## Behind-the-craft videos
 The homepage section `#behind-the-craft` (between the keepsake stories and “Something meaningful”) shows four product films from `videos/` (`product-video-01.mp4` … `04.mp4`, each with a matching `-poster.jpg`) as portrait cards with a title and a short line underneath; on phones they become a swipeable row. Videos are muted, looped, `playsinline` and `preload="metadata"`; `script.js` attaches each source only as it nears the viewport, plays it while on screen and pauses it off-screen. Visitors can tap a film or its round button to pause or play it, which also covers phones that block autoplay (for example iPhone Low Power Mode). To replace a film, overwrite the file in `videos/` with the same name.
-
-## Automatic deploy
-`.github/workflows/deploy.yml` uploads the site to the resin.sociobees.in hosting over FTPS whenever `main` changes. Add the four repository secrets listed at the top of that file once (FTP_SERVER, FTP_USERNAME, FTP_PASSWORD, FTP_SERVER_DIR); until then the workflow skips the upload. It never deletes files it didn't upload, so remove any old files on the server once by hand.
