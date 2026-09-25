@@ -1,0 +1,43 @@
+# Uploads the website to the resin.sociobees.in hosting whenever main changes.
+# One-time setup (GitHub repo → Settings → Secrets and variables → Actions → New repository secret):
+#   FTP_SERVER      e.g. ftp.sociobees.in
+#   FTP_USERNAME    the FTP account for the resin.sociobees.in folder
+#   FTP_PASSWORD    that account's password
+#   FTP_SERVER_DIR  the site folder on the server, ending in /, e.g. /public_html/resin/
+# Until these are added, the workflow skips the upload and does nothing.
+name: Deploy website
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HAS_FTP: ${{ secrets.FTP_SERVER != '' && secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' && secrets.FTP_SERVER_DIR != '' }}
+    steps:
+      - name: Explain skipped deploy
+        if: env.HAS_FTP != 'true'
+        run: echo "::notice::FTP secrets are not set yet, so the website was not uploaded. See the comment at the top of .github/workflows/deploy.yml."
+      - uses: actions/checkout@v4
+        if: env.HAS_FTP == 'true'
+      - name: Upload website to hosting
+        if: env.HAS_FTP == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          protocol: ftps
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .github/**
+            README.md
