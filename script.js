@@ -50,7 +50,7 @@ updateBag();
 const films = [...document.querySelectorAll('.craft-film video')];
 if (films.length) {
   const toggle = document.querySelector('.craft-films-toggle');
-  let paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let paused = false;
   const visible = new Set();
   const load = video => { const source = video.querySelector('source[data-src]'); if (!source) return; source.src = source.dataset.src; source.removeAttribute('data-src'); video.preload = 'metadata'; video.load(); };
   const sync = video => { if (!paused && visible.has(video)) video.play().catch(() => {}); else video.pause(); };
