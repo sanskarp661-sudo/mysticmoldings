@@ -18,3 +18,6 @@ The product and keepsake images in `images/` are drawn SVG illustrations of resi
 
 ## Instagram
 The owner-provided profile https://www.instagram.com/mystic_moldings/ is linked from the homepage, both footers, and contact/enquiry flows. Drafts are not sent automatically. Instagram profile content could not be retrieved during setup, so bio, location, policies, and product photos have not been imported or inferred.
+
+## Behind-the-craft videos
+The homepage section `#behind-the-craft` (between the keepsake stories and “Something meaningful”) plays five product films from `videos/` (`product-video-01.mp4` … `05.mp4`, each with a matching `-poster.jpg`). Videos are muted, looped and `playsinline`; `script.js` attaches each source only when it comes within 300px of the viewport, plays it only while it is on screen, pauses it off-screen, and offers a pause/play toggle. Visitors who prefer reduced motion see the posters until they press play. To replace a film, overwrite the file in `videos/` with the same name.
