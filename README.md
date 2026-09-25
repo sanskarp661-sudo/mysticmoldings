@@ -24,3 +24,6 @@ The homepage section `#behind-the-craft` (between the keepsake stories and “So
 
 ## Updating the site
 Hostinger and browsers cache `styles.css` and the scripts. Whenever those files change, bump the `?v=` number on their links in `index.html` and `contact.html` so visitors get the new version straight away.
+
+## Cart
+`cart.html` + `cart.js`: shoppers add pieces with the “+” on any product, then review them on the cart page (quantities, a personalisation note per piece, their name, phone, city and PIN, an optional date, gift wrap and a note). “Place order on Instagram” copies a ready-made order message and opens the @mystic_moldings DM; “Download order summary” saves the same text. The cart, notes and contact details are kept in the visitor’s browser only. No payment is taken on the site; prices and delivery are confirmed in the DM.
