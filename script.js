@@ -46,21 +46,23 @@ document.querySelector('#year').textContent = new Date().getFullYear();
 document.querySelectorAll('[data-filter]').forEach(button => button.setAttribute('aria-pressed', button.classList.contains('active')));
 if (document.querySelector('#products')) renderProducts();
 updateBag();
-// Behind-the-craft films: attach each source only as it nears the viewport, and pause off-screen films to save data and battery.
-const films = [...document.querySelectorAll('.craft-film video')];
+// Behind-the-craft films: attach each source only as it nears the viewport, play while on screen, and let visitors tap to pause or play.
+const films = [...document.querySelectorAll('.craft-film')].map(card => ({ card, video: card.querySelector('video'), button: card.querySelector('.film-toggle'), label: card.querySelector('h3').textContent.toLowerCase(), onScreen: false, held: false }));
 if (films.length) {
-  const toggle = document.querySelector('.craft-films-toggle');
-  let paused = false;
-  const visible = new Set();
-  const load = video => { const source = video.querySelector('source[data-src]'); if (!source) return; source.src = source.dataset.src; source.removeAttribute('data-src'); video.preload = 'metadata'; video.load(); };
-  const sync = video => { if (!paused && visible.has(video)) video.play().catch(() => {}); else video.pause(); };
-  const setPaused = value => { paused = value; toggle.setAttribute('aria-pressed', paused); toggle.firstChild.textContent = paused ? 'Play the films ' : 'Pause the films '; toggle.lastElementChild.textContent = paused ? '▶' : '❙❙'; films.forEach(sync); };
+  const load = film => { const source = film.video.querySelector('source[data-src]'); if (!source) return; source.src = source.dataset.src; source.removeAttribute('data-src'); film.video.load(); };
+  const show = film => { const paused = film.video.paused; film.card.classList.toggle('is-paused', paused); film.button.setAttribute('aria-label', `${paused ? 'Play' : 'Pause'} the ${film.label} film`); };
+  const sync = film => { if (film.onScreen && !film.held) film.video.play().catch(() => show(film)); else film.video.pause(); };
+  films.forEach(film => {
+    ['play', 'pause'].forEach(type => film.video.addEventListener(type, () => show(film)));
+    const toggle = () => { load(film); if (film.video.paused) { film.held = false; film.video.play().catch(() => show(film)); } else { film.held = true; film.video.pause(); } };
+    film.button.addEventListener('click', toggle);
+    film.video.addEventListener('click', toggle);
+    show(film);
+  });
   if ('IntersectionObserver' in window) {
-    const nearby = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { load(entry.target); nearby.unobserve(entry.target); } }), { rootMargin: '300px 0px' });
-    const onScreen = new IntersectionObserver(entries => entries.forEach(entry => { entry.isIntersecting ? visible.add(entry.target) : visible.delete(entry.target); sync(entry.target); }), { threshold: 0.2 });
-    films.forEach(video => { video.autoplay = false; nearby.observe(video); onScreen.observe(video); });
-  } else films.forEach(video => { load(video); visible.add(video); });
-  toggle.hidden = false;
-  toggle.addEventListener('click', () => setPaused(!paused));
-  setPaused(paused);
+    const byVideo = new Map(films.map(film => [film.video, film]));
+    const nearby = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { load(byVideo.get(entry.target)); nearby.unobserve(entry.target); } }), { rootMargin: '300px' });
+    const onScreen = new IntersectionObserver(entries => entries.forEach(entry => { const film = byVideo.get(entry.target); film.onScreen = entry.isIntersecting; sync(film); }), { threshold: 0.3 });
+    films.forEach(film => { film.video.autoplay = false; nearby.observe(film.video); onScreen.observe(film.video); });
+  } else films.forEach(film => { load(film); film.onScreen = true; sync(film); });
 }
