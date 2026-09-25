@@ -49,26 +49,22 @@ function renderProducts(filter = 'All') {
   const shown = filter === 'All' && !showAll ? FEATURED.map(id => list.find(p => p.id === id)).filter(Boolean).slice(0, SHOP_PREVIEW) : list;
   const more = document.querySelector('#shop-more');
   if (more) { more.hidden = filter !== 'All' || list.length <= SHOP_PREVIEW; more.querySelector('span').textContent = showAll ? 'Show fewer pieces' : `View all ${list.length} pieces`; more.setAttribute('aria-expanded', showAll); }
-  document.querySelector('#products').innerHTML = shown.map(p => `<article class="product-card"><div class="product-image${p.image2 ? ' has-alt' : ''}"><img src="${imageUrl(p)}" alt="${p.alt}" loading="lazy">${p.image2 ? `<img class="alt-view" src="images/${p.image2}" alt="" loading="lazy"><span class="view-dots" aria-hidden="true"><i></i><i></i></span>` : ''}<span class="product-tag">${p.tag}</span><button class="add-bag" data-add="${p.id}" aria-label="Save ${p.name} to your picks">+</button></div><div class="product-meta"><h3>${p.name}</h3></div><p>${p.detail}</p></article>`).join('');
+  document.querySelector('#products').innerHTML = shown.map(p => `<article class="product-card"><div class="product-image${p.image2 ? ' has-alt' : ''}"><img src="${imageUrl(p)}" alt="${p.alt}" loading="lazy">${p.image2 ? `<img class="alt-view" src="images/${p.image2}" alt="" loading="lazy"><span class="view-dots" aria-hidden="true"><i></i><i></i></span>` : ''}<span class="product-tag">${p.tag}</span><button class="add-bag" data-add="${p.id}" aria-label="Add ${p.name} to your cart">+</button></div><div class="product-meta"><h3>${p.name}</h3></div><p>${p.detail}</p></article>`).join('');
 }
 function updateBag() {
-  const count = Object.values(bag).reduce((a,b) => a+b,0);
-  document.querySelector('#bag-count').textContent = count;
-  document.querySelector('#bag-title-count').textContent = `(${count})`;
-  const items = products.filter(p => bag[p.id]);
-  document.querySelector('#bag-items').innerHTML = items.length ? items.map(p => `<div class="bag-item"><img src="${imageUrl(p)}" alt="${p.name}"><div class="bag-item-info"><h3>${p.name}</h3><p>Quantity: ${bag[p.id]}</p></div><button class="remove-item" data-remove="${p.id}" aria-label="Remove ${p.name} from bag">Remove</button></div>`).join('') : '<p class="empty-bag">Your bag is waiting for a little everyday magic. Explore the collection and find something you love.</p>';
-  document.querySelector('#bag-total').innerHTML = '';
+  const count = Object.values(bag).reduce((a, b) => a + b, 0);
+  const badge = document.querySelector('#bag-count');
+  if (badge) badge.textContent = count;
   try { localStorage.setItem('mystic-bag', JSON.stringify(bag)); } catch {}
+  document.dispatchEvent(new CustomEvent('cartchange'));
 }
 let toastTimer;
-function toast(message) { const el = document.querySelector('#toast'); el.textContent = message; el.classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('visible'), 2800); }
+function toast(message) { const el = document.querySelector('#toast'); if (!el) return; el.textContent = message; el.classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('visible'), 2800); }
 document.addEventListener('click', event => {
   const filter = event.target.closest('[data-filter]');
   if (filter) { document.querySelectorAll('[data-filter]').forEach(button => { const active = button === filter; button.classList.toggle('active', active); button.setAttribute('aria-pressed', active); }); renderProducts(filter.dataset.filter); }
   const add = event.target.closest('[data-add]');
-  if (add) { bag[add.dataset.add] = Math.min((bag[add.dataset.add] || 0) + 1, 99); updateBag(); toast('A little lovely, saved to your picks.'); }
-  const remove = event.target.closest('[data-remove]');
-  if (remove) { delete bag[remove.dataset.remove]; updateBag(); }
+  if (add) { bag[add.dataset.add] = Math.min((bag[add.dataset.add] || 0) + 1, 99); updateBag(); toast('Added to your cart.'); }
   const custom = event.target.closest('[data-keepsake]');
   if (custom) { document.querySelector('[name="keepsake"]').value = custom.dataset.keepsake; document.querySelector('#form-status').textContent = ''; document.querySelector('#custom-dialog').showModal(); }
   const altView = !event.target.closest('.add-bag') && event.target.closest('.product-image.has-alt');
@@ -80,7 +76,6 @@ document.addEventListener('click', event => {
   const close = event.target.closest('[data-close]');
   if (close) close.closest('dialog').close();
 });
-document.querySelector('#open-bag').addEventListener('click', () => document.querySelector('#bag-dialog').showModal());
 document.querySelectorAll('dialog').forEach(dialog => dialog.addEventListener('click', event => { if (event.target === dialog) { const rect = dialog.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close(); } }));
 document.querySelector('#custom-form')?.addEventListener('submit', event => {
   event.preventDefault(); const data = new FormData(event.target);
@@ -88,7 +83,7 @@ document.querySelector('#custom-form')?.addEventListener('submit', event => {
   const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' })); const link = document.createElement('a'); link.href = url; link.download = 'my-mystic-moldings-enquiry.txt'; document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   document.querySelector('#form-status').textContent = 'Your enquiry file is ready. Copy its contents into a message to @mystic_moldings on Instagram. Nothing has been sent automatically.';
 });
-document.querySelector('#year').textContent = new Date().getFullYear();
+const yearEl = document.querySelector('#year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 document.querySelectorAll('[data-filter]').forEach(button => button.setAttribute('aria-pressed', button.classList.contains('active')));
 if (document.querySelector('#products')) renderProducts();
 updateBag();
