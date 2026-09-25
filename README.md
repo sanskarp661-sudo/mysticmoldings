@@ -21,3 +21,6 @@ The owner-provided profile https://www.instagram.com/mystic_moldings/ is linked 
 
 ## Behind-the-craft videos
 The homepage section `#behind-the-craft` (between the keepsake stories and “Something meaningful”) shows four product films from `videos/` (`product-video-01.mp4` … `04.mp4`, each with a matching `-poster.jpg`) as portrait cards with a title and a short line underneath; on phones they become a swipeable row. Videos are muted, looped, `playsinline` and `preload="metadata"`; `script.js` attaches each source only as it nears the viewport, plays it while on screen and pauses it off-screen. Visitors can tap a film or its round button to pause or play it, which also covers phones that block autoplay (for example iPhone Low Power Mode). To replace a film, overwrite the file in `videos/` with the same name.
+
+## Updating the site
+Hostinger and browsers cache `styles.css` and the scripts. Whenever those files change, bump the `?v=` number on their links in `index.html` and `contact.html` so visitors get the new version straight away.
