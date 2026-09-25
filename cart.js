@@ -2,6 +2,11 @@
 const DM_URL = 'https://ig.me/m/mystic_moldings';
 const NOTES_KEY = 'mystic-cart-notes';
 const DETAILS_KEY = 'mystic-cart-details';
+// UPI: leave empty to share payment details in the Instagram DM.
+// To show a masked UPI ID with a "Pay with UPI app" button, put it here, e.g. 'name@bank'.
+// Note: the site's code (and the GitHub repository, if public) will contain the full ID.
+const UPI_ID = '';
+const UPI_NAME = 'Mystic Moldings';
 const esc = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const read = key => { try { return JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch { return {}; } };
 const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} };
@@ -66,6 +71,8 @@ function orderText(data) {
     data.gift ? 'Gift wrap: yes, please' : null,
     data.note ? `Note: ${data.note}` : null,
     '',
+    'Payment: UPI',
+    '',
     'Please confirm prices, availability and delivery. Thank you!'
   ].filter(line => line !== null).join('\n');
 }
@@ -117,5 +124,13 @@ form.addEventListener('submit', async event => {
 const saved = read(DETAILS_KEY);
 ['name', 'phone', 'city'].forEach(key => { if (saved[key]) form[key].value = saved[key]; });
 form.date.min = new Date().toISOString().slice(0, 10);
+if (UPI_ID) {
+  const [user, bank] = UPI_ID.split('@');
+  document.querySelector('#upi-masked').textContent = `${user.slice(0, 2)}${'•'.repeat(Math.max(user.length - 6, 3))}${user.slice(-4)}@${bank}`;
+  document.querySelector('#upi-open').href = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&cu=INR`;
+  document.querySelector('#upi-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(UPI_ID); toast('UPI ID copied.'); } catch { toast('Could not copy. Please type it in your UPI app.'); } });
+  document.querySelector('#upi-pay-step').textContent = 'Pay the confirmed amount using the UPI details below and share the screenshot in the DM, and we start making your piece.';
+  document.querySelector('#upi-pay').hidden = false;
+}
 document.addEventListener('cartchange', renderCart);
 renderCart();
