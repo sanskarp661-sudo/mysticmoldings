@@ -46,3 +46,21 @@ document.querySelector('#year').textContent = new Date().getFullYear();
 document.querySelectorAll('[data-filter]').forEach(button => button.setAttribute('aria-pressed', button.classList.contains('active')));
 if (document.querySelector('#products')) renderProducts();
 updateBag();
+// Behind-the-craft films: attach each source only as it nears the viewport, and pause off-screen films to save data and battery.
+const films = [...document.querySelectorAll('.craft-film video')];
+if (films.length) {
+  const toggle = document.querySelector('.craft-films-toggle');
+  let paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const visible = new Set();
+  const load = video => { const source = video.querySelector('source[data-src]'); if (!source) return; source.src = source.dataset.src; source.removeAttribute('data-src'); video.preload = 'metadata'; video.load(); };
+  const sync = video => { if (!paused && visible.has(video)) video.play().catch(() => {}); else video.pause(); };
+  const setPaused = value => { paused = value; toggle.setAttribute('aria-pressed', paused); toggle.firstChild.textContent = paused ? 'Play the films ' : 'Pause the films '; toggle.lastElementChild.textContent = paused ? '▶' : '❙❙'; films.forEach(sync); };
+  if ('IntersectionObserver' in window) {
+    const nearby = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { load(entry.target); nearby.unobserve(entry.target); } }), { rootMargin: '300px 0px' });
+    const onScreen = new IntersectionObserver(entries => entries.forEach(entry => { entry.isIntersecting ? visible.add(entry.target) : visible.delete(entry.target); sync(entry.target); }), { threshold: 0.2 });
+    films.forEach(video => { video.autoplay = false; nearby.observe(video); onScreen.observe(video); });
+  } else films.forEach(video => { load(video); visible.add(video); });
+  toggle.hidden = false;
+  toggle.addEventListener('click', () => setPaused(!paused));
+  setPaused(paused);
+}
