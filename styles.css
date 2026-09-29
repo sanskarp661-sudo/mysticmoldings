@@ -91,3 +91,4 @@
 @media(max-width:700px){.exhibition-films{grid-column:1/-1;max-width:none;width:auto;justify-self:stretch}}
 .fit-whole{position:relative;overflow:hidden}.fit-whole::before{content:"";position:absolute;inset:-30px;background:var(--fit-bg) center/cover no-repeat;filter:blur(22px) saturate(.9) brightness(.92);transform:scale(1.1)}.fit-whole>img:not(.alt-view){position:relative;object-fit:contain!important}.fit-whole>span,.fit-whole>button{z-index:2}
 .cart-item>img{object-fit:contain;background:#efece4}
+.instagram-invite .ig-gradient-text{background:linear-gradient(90deg,#f58529 0%,#dd2a7b 45%,#8134af 75%,#515bd4 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;width:fit-content;margin-left:auto;margin-right:auto}
