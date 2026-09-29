@@ -91,29 +91,33 @@ const yearEl = document.querySelector('#year'); if (yearEl) yearEl.textContent =
 document.querySelectorAll('[data-filter]').forEach(button => button.setAttribute('aria-pressed', button.classList.contains('active')));
 if (document.querySelector('#products')) renderProducts();
 updateBag();
-// Tapping a film opens it full screen, turning phones to landscape where the browser allows it.
-async function openFullscreen(film) {
+// Clicking a film pops it out into a large floating player over the page (the page stays visible).
+let popout;
+function openFullscreen(film) {
   const v = film.video;
   const source = v.querySelector('source[data-src]');
   if (source) { source.src = source.dataset.src; source.removeAttribute('data-src'); v.load(); }
-  film.held = false;
-  v.controls = true;
-  v.play().catch(() => {});
-  try {
-    if (v.requestFullscreen) await v.requestFullscreen();
-    else if (v.webkitRequestFullscreen) v.webkitRequestFullscreen();
-    else if (v.webkitEnterFullscreen) { v.webkitEnterFullscreen(); return; }
-    await screen.orientation?.lock?.('landscape');
-  } catch {}
+  closePopout();
+  popout = document.createElement('div');
+  popout.className = 'film-popout';
+  popout.setAttribute('role', 'dialog');
+  popout.setAttribute('aria-label', film.card.querySelector('h3').textContent);
+  const big = document.createElement('video');
+  big.src = v.currentSrc || v.querySelector('source')?.src || '';
+  big.poster = v.poster; big.muted = true; big.loop = true; big.playsInline = true; big.autoplay = true; big.controls = true;
+  big.currentTime = v.currentTime || 0;
+  const close = document.createElement('button');
+  close.className = 'film-popout-close'; close.type = 'button'; close.setAttribute('aria-label', 'Close video'); close.textContent = '×';
+  const frame = document.createElement('div'); frame.className = 'film-popout-frame';
+  frame.append(big, close); popout.append(frame);
+  document.body.append(popout);
+  requestAnimationFrame(() => popout.classList.add('open'));
+  big.play().catch(() => {});
+  close.focus();
+  popout.addEventListener('click', e => { if (e.target === popout || e.target === close) closePopout(); });
 }
-function leaveFullscreen() {
-  if (document.fullscreenElement || document.webkitFullscreenElement) return;
-  try { screen.orientation?.unlock?.(); } catch {}
-  document.querySelectorAll('.craft-film video[controls]').forEach(v => { v.controls = false; });
-}
-document.addEventListener('fullscreenchange', leaveFullscreen);
-document.addEventListener('webkitfullscreenchange', leaveFullscreen);
-document.querySelectorAll('.craft-film video').forEach(v => v.addEventListener('webkitendfullscreen', () => { v.controls = false; }));
+function closePopout() { if (!popout) return; const el = popout; popout = null; el.classList.remove('open'); setTimeout(() => el.remove(), 250); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopout(); });
 // Behind-the-craft films: attach each source only as it nears the viewport, play while on screen, and let visitors tap to pause or play.
 const films = [...document.querySelectorAll('.craft-film')].map(card => ({ card, video: card.querySelector('video'), button: card.querySelector('.film-toggle'), label: card.querySelector('h3').textContent.toLowerCase(), onScreen: false, held: false }));
 if (films.length) {
