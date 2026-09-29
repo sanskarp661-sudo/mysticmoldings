@@ -54,6 +54,7 @@ function renderProducts(filter = 'All') {
   const more = document.querySelector('#shop-more');
   if (more) { more.hidden = filter !== 'All' || list.length <= SHOP_PREVIEW; more.querySelector('span').textContent = showAll ? 'Show fewer pieces' : `View all ${list.length} pieces`; more.setAttribute('aria-expanded', showAll); }
   document.querySelector('#products').innerHTML = shown.map(p => `<article class="product-card"><div class="product-image${p.image2 ? ' has-alt' : ''}"><img src="${imageUrl(p)}" alt="${p.alt}" loading="lazy">${p.image2 ? `<img class="alt-view" src="images/${p.image2}" alt="" loading="lazy"><span class="view-dots" aria-hidden="true"><i></i><i></i></span>` : ''}<span class="product-tag">${p.tag}</span><button class="add-bag" data-add="${p.id}" aria-label="Add ${p.name} to your cart">+</button></div><div class="product-meta"><h3>${p.name}</h3></div><p>${p.detail}</p></article>`).join('');
+  requestAnimationFrame(refit);
 }
 function updateBag() {
   const count = Object.values(bag).reduce((a, b) => a + b, 0);
@@ -138,3 +139,21 @@ if (films.length) {
     films.forEach(film => { film.video.autoplay = false; nearby.observe(film.video); onScreen.observe(film.video); });
   } else films.forEach(film => { load(film); film.onScreen = true; sync(film); });
 }
+// Never cut a product off: if a photo's shape differs a lot from its frame, show the whole photo
+// on a soft blurred copy of itself instead of cropping it (only when more than 30% would be cut).
+function autoFit(img) {
+  const box = img.parentElement;
+  if (!img.naturalWidth || !box || img.classList.contains('alt-view')) return;
+  const r = box.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  const na = img.naturalWidth / img.naturalHeight, ba = r.width / r.height;
+  const kept = na > ba ? ba / na : na / ba;
+  const fit = kept < 0.7;
+  box.classList.toggle('fit-whole', fit);
+  if (fit) box.style.setProperty('--fit-bg', `url("${img.currentSrc || img.src}")`);
+}
+const FIT_SCOPE = '.product-image > img, .story-image > img[data-fit], .sold-grid img';
+document.addEventListener('load', e => { if (e.target.matches?.(FIT_SCOPE)) autoFit(e.target); }, true);
+function refit() { document.querySelectorAll('.product-image > img, .story-image > img[data-fit], .sold-grid img').forEach(autoFit); }
+window.addEventListener('resize', () => { clearTimeout(refit.t); refit.t = setTimeout(refit, 150); });
+refit();

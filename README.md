@@ -30,3 +30,6 @@ Hostinger and browsers cache `styles.css` and the scripts. Whenever those files 
 
 ## From the Instagram highlights
 Sold-out pieces (“Loved & gone”), customisations (name pendant, bar set, Ganesha), a customer love note, and the How to order / Returns rules (DM a product picture; record an unboxing video for returns) come from the @mystic_moldings highlights. Photos were cropped from story screenshots, so they are lower resolution than the product shoots.
+
+## Photo framing
+`script.js` checks every shop, sold-out and marked (`data-fit`) photo against its frame. If more than 30% of the photo would be cropped, it shows the whole photo on a soft blurred copy of itself instead, so products are never cut off. When adding new photos, crop them close to 4:5 (portrait) for the best fit.

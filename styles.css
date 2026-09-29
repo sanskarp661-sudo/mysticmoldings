@@ -89,3 +89,5 @@
 @media(max-width:1000px){.diy{gap:40px}}
 @media(max-width:700px){.diy{grid-template-columns:1fr;gap:30px}.diy-films .craft-film:nth-child(2){margin-top:0}}
 @media(max-width:700px){.exhibition-films{grid-column:1/-1;max-width:none;width:auto;justify-self:stretch}}
+.fit-whole{position:relative;overflow:hidden}.fit-whole::before{content:"";position:absolute;inset:-30px;background:var(--fit-bg) center/cover no-repeat;filter:blur(22px) saturate(.9) brightness(.92);transform:scale(1.1)}.fit-whole>img:not(.alt-view){position:relative;object-fit:contain!important}.fit-whole>span,.fit-whole>button{z-index:2}
+.cart-item>img{object-fit:contain;background:#efece4}
