@@ -78,3 +78,4 @@
 @media(max-width:700px){.sold-grid{grid-template-columns:repeat(2,1fr);gap:10px}.love-note{padding:52px 6%}}
 .craft-films-row{grid-template-columns:repeat(3,1fr)}.craft-film:nth-child(even){margin-top:0}.craft-film:nth-child(3n+2){margin-top:56px}
 @media(max-width:700px){.craft-film:nth-child(3n+2){margin-top:0}}
+.exhibition-films{grid-column:1/-1;margin-top:10px}
