@@ -91,6 +91,29 @@ const yearEl = document.querySelector('#year'); if (yearEl) yearEl.textContent =
 document.querySelectorAll('[data-filter]').forEach(button => button.setAttribute('aria-pressed', button.classList.contains('active')));
 if (document.querySelector('#products')) renderProducts();
 updateBag();
+// Tapping a film opens it full screen, turning phones to landscape where the browser allows it.
+async function openFullscreen(film) {
+  const v = film.video;
+  const source = v.querySelector('source[data-src]');
+  if (source) { source.src = source.dataset.src; source.removeAttribute('data-src'); v.load(); }
+  film.held = false;
+  v.controls = true;
+  v.play().catch(() => {});
+  try {
+    if (v.requestFullscreen) await v.requestFullscreen();
+    else if (v.webkitRequestFullscreen) v.webkitRequestFullscreen();
+    else if (v.webkitEnterFullscreen) { v.webkitEnterFullscreen(); return; }
+    await screen.orientation?.lock?.('landscape');
+  } catch {}
+}
+function leaveFullscreen() {
+  if (document.fullscreenElement || document.webkitFullscreenElement) return;
+  try { screen.orientation?.unlock?.(); } catch {}
+  document.querySelectorAll('.craft-film video[controls]').forEach(v => { v.controls = false; });
+}
+document.addEventListener('fullscreenchange', leaveFullscreen);
+document.addEventListener('webkitfullscreenchange', leaveFullscreen);
+document.querySelectorAll('.craft-film video').forEach(v => v.addEventListener('webkitendfullscreen', () => { v.controls = false; }));
 // Behind-the-craft films: attach each source only as it nears the viewport, play while on screen, and let visitors tap to pause or play.
 const films = [...document.querySelectorAll('.craft-film')].map(card => ({ card, video: card.querySelector('video'), button: card.querySelector('.film-toggle'), label: card.querySelector('h3').textContent.toLowerCase(), onScreen: false, held: false }));
 if (films.length) {
@@ -101,7 +124,7 @@ if (films.length) {
     ['play', 'pause'].forEach(type => film.video.addEventListener(type, () => show(film)));
     const toggle = () => { load(film); if (film.video.paused) { film.held = false; film.video.play().catch(() => show(film)); } else { film.held = true; film.video.pause(); } };
     film.button.addEventListener('click', toggle);
-    film.video.addEventListener('click', toggle);
+    film.video.addEventListener('click', () => openFullscreen(film));
     show(film);
   });
   if ('IntersectionObserver' in window) {

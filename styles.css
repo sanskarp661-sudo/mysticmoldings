@@ -79,3 +79,4 @@
 .craft-films-row{grid-template-columns:repeat(3,1fr)}.craft-film:nth-child(even){margin-top:0}.craft-film:nth-child(3n+2){margin-top:56px}
 @media(max-width:700px){.craft-film:nth-child(3n+2){margin-top:0}}
 .exhibition-films{grid-column:1/-1;margin-top:10px}
+.craft-film video{cursor:zoom-in}.craft-film video:fullscreen{object-fit:contain;background:#000}.craft-film video:-webkit-full-screen{object-fit:contain;background:#000}
